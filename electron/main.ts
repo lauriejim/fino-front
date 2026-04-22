@@ -40,12 +40,11 @@ function setupAutoUpdater(): void {
   autoUpdater.autoInstallOnAppQuit = process.platform !== "darwin";
   autoUpdater.forceDevUpdateConfig = !app.isPackaged;
 
-  // GH_TOKEN is read from the environment at runtime (set at build time
-  // by electron-builder via GH_TOKEN env var). Do NOT hardcode a token here.
-  const token = process.env.GH_TOKEN?.trim();
-  if (token) {
-    autoUpdater.requestHeaders = { Authorization: `token ${token}` };
-  }
+  // fino-front is a public GitHub repo, so autoUpdater can read releases
+  // and artifacts anonymously — no Authorization header needed at
+  // runtime. GH_TOKEN is still used at BUILD time (in CI) by
+  // electron-builder to *publish* to Releases, but that's a separate
+  // concern.
 
   autoUpdater.on("checking-for-update", () => sendUpdaterStatus({ status: "checking" }));
   autoUpdater.on("update-available", (info) =>
