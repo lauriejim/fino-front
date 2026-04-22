@@ -157,11 +157,25 @@ ipcMain.handle("updater:downloadUpdate", async () => {
 });
 
 ipcMain.handle("updater:installUpdate", async () => {
+  // Squirrel (the framework behind electron-updater on macOS) validates
+  // that the old and new bundle have matching code signatures before
+  // swapping. Without an Apple Developer ID to sign with, each ad-hoc
+  // build has a *different* signature, so the validation fails every
+  // time. We fall back to "open the downloaded file in Finder" on Mac
+  // — the user drags the new Fino.app to /Applications manually. Windows
+  // and Linux aren't affected and use the normal quitAndInstall path.
+  if (process.platform === "darwin") {
+    const downloadedFile =
+      updateState.status === "downloaded" ? updateState.downloadedFile : null;
+    if (downloadedFile && fs.existsSync(downloadedFile)) {
+      shell.showItemInFolder(downloadedFile);
+      return true;
+    }
+    await shell.openExternal("https://github.com/lauriejim/fino-front/releases/latest");
+    return true;
+  }
+
   try {
-    // quitAndInstall works on both platforms. On macOS it replaces the
-    // current .app bundle with the downloaded one and relaunches —
-    // unsigned is fine as long as the app isn't running from a
-    // translocated path (Downloads, a dmg mount, etc.).
     autoUpdater.quitAndInstall();
     return true;
   } catch (err) {

@@ -42,7 +42,7 @@
     "wait-on": "^8.0.0"
   },
   "build": {
-    "appId": "com.makeitrain.fino",
+    "appId": "com.fino.app",
     "productName": "Fino",
     "directories": {
       "buildResources": "build"

@@ -117,6 +117,22 @@ for stable releases.
 - [ ] Build works locally (`yarn package:mac` on Mac / `yarn package:win` on Windows)
 - [ ] Changelog / release notes drafted somewhere (optional but nice)
 
+### Auto-update behavior per platform
+
+- **Windows** — fully automatic. User clicks *Install & restart*, NSIS
+  swaps the binary and relaunches the new version.
+- **macOS** — **manual drag-and-drop**. Apple's Squirrel framework
+  refuses the in-place swap unless both the old and new bundle are
+  signed by the same Apple Developer ID. Without the $99/year Developer
+  Program, each ad-hoc build has a different signature so validation
+  always fails (`Code signature … did not pass validation`). The
+  banner's *Open download* button opens the downloaded file in Finder;
+  the user drags the new Fino.app into /Applications, confirms the
+  overwrite, then right-clicks → Open (Gatekeeper one-time prompt).
+- **When to enroll in the Apple Developer Program** — not before the
+  user base outgrows a handful of people or the manual drag-and-drop
+  friction starts costing real time.
+
 ### Env file strategy
 
 Vite loads env files by mode:

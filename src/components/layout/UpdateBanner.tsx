@@ -56,6 +56,12 @@ export function UpdateBanner() {
   const api = window.electronAPI?.updater;
   if (!api) return null;
 
+  // macOS can't auto-install without an Apple Developer ID (Squirrel
+  // rejects the swap when old/new code signatures don't match, which
+  // is always the case for ad-hoc builds). We surface the limitation
+  // in the UI and steer users to the manual drag-and-drop flow.
+  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
+
   if (status.status === "available") {
     return (
       <Banner tone="info" onDismiss={() => setDismissed(true)}>
@@ -83,6 +89,26 @@ export function UpdateBanner() {
   }
 
   if (status.status === "downloaded") {
+    if (isMac) {
+      return (
+        <Banner tone="success">
+          <Text sx={{ fontWeight: "bold" }}>
+            Version {status.version ?? "—"} downloaded
+          </Text>
+          <Text sx={{ fontSize: 0, color: "fg.muted" }}>
+            Drag the new Fino.app into /Applications to install.
+          </Text>
+          <Button
+            size="small"
+            variant="primary"
+            leadingVisual={DownloadIcon}
+            onClick={() => api.installUpdate()}
+          >
+            Open download
+          </Button>
+        </Banner>
+      );
+    }
     return (
       <Banner tone="success">
         <Text sx={{ fontWeight: "bold" }}>
