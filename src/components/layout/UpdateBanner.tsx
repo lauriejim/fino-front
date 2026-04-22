@@ -56,10 +56,6 @@ export function UpdateBanner() {
   const api = window.electronAPI?.updater;
   if (!api) return null;
 
-  // macOS unsigned builds can't quitAndInstall — we steer those users
-  // to the download page instead.
-  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
-
   if (status.status === "available") {
     return (
       <Banner tone="info" onDismiss={() => setDismissed(true)}>
@@ -87,22 +83,6 @@ export function UpdateBanner() {
   }
 
   if (status.status === "downloaded") {
-    if (isMac) {
-      return (
-        <Banner tone="success" onDismiss={() => setDismissed(true)}>
-          <Text sx={{ fontWeight: "bold" }}>
-            Version {status.version ?? "—"} downloaded
-          </Text>
-          <Button
-            size="small"
-            leadingVisual={DownloadIcon}
-            onClick={() => api.openManualDownload()}
-          >
-            Open download
-          </Button>
-        </Banner>
-      );
-    }
     return (
       <Banner tone="success">
         <Text sx={{ fontWeight: "bold" }}>
@@ -121,9 +101,18 @@ export function UpdateBanner() {
   }
 
   if (status.status === "error") {
+    // If an install failed, give the user an escape hatch to grab the
+    // update manually from the GitHub Release page.
     return (
       <Banner tone="danger" onDismiss={() => setDismissed(true)}>
         <Text>Updater error: {status.message}</Text>
+        <Button
+          size="small"
+          leadingVisual={DownloadIcon}
+          onClick={() => api.openManualDownload()}
+        >
+          Open download page
+        </Button>
       </Banner>
     );
   }

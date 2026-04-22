@@ -37,7 +37,12 @@ function sendUpdaterStatus(payload: UpdaterStatus): void {
 
 function setupAutoUpdater(): void {
   autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = process.platform !== "darwin";
+  // Install on quit on both platforms. On macOS this works for unsigned
+  // builds too, as long as the app is in /Applications (the standard
+  // location after the .dmg drag-and-drop). The worst-case failure mode
+  // is that the user gets the "unverified developer" popup again on the
+  // next launch — same one-off friction as the first install.
+  autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.forceDevUpdateConfig = !app.isPackaged;
 
   // fino-front is a public GitHub repo, so autoUpdater can read releases
@@ -152,15 +157,22 @@ ipcMain.handle("updater:downloadUpdate", async () => {
 });
 
 ipcMain.handle("updater:installUpdate", async () => {
-  if (process.platform === "darwin") {
+  try {
+    // quitAndInstall works on both platforms. On macOS it replaces the
+    // current .app bundle with the downloaded one and relaunches —
+    // unsigned is fine as long as the app isn't running from a
+    // translocated path (Downloads, a dmg mount, etc.).
+    autoUpdater.quitAndInstall();
+    return true;
+  } catch (err) {
     sendUpdaterStatus({
       status: "error",
-      message: "Automatic install is disabled on macOS for unsigned builds. Use manual download.",
+      message:
+        (err as Error)?.message ??
+        "Could not install the update automatically. Use manual download as a fallback.",
     });
     return false;
   }
-  autoUpdater.quitAndInstall();
-  return true;
 });
 
 ipcMain.handle("updater:openManualDownload", async () => {
