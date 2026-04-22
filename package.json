@@ -1,7 +1,7 @@
 {
   "name": "fino",
   "description": "Fino — v2 of Make It Rain (React + Primer + Electron)",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "private": true,
   "main": "dist-electron/main.js",
   "license": "MIT",
