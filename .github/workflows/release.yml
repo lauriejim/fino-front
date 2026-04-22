@@ -48,22 +48,22 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: yarn
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm install
         # .npmrc pins legacy-peer-deps=true to work around the
-        # Primer v36 + React 19 peer-dep mismatch (yarn honors .npmrc).
+        # Primer v36 + React 19 peer-dep mismatch.
 
       - name: Build & publish (macOS)
         if: matrix.os == 'macos-latest'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn package:mac --publish always
+        run: npm run package:mac -- --publish always
 
       - name: Build & publish (Windows)
         if: matrix.os == 'windows-latest'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn package:win --publish always
+        run: npm run package:win -- --publish always

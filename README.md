@@ -81,6 +81,34 @@ git tag v2.0.1
 git push origin main --tags
 ```
 
+### Redo a release under the same version
+
+Use this when a release is broken (build failed, wrong env URL baked in,
+missing file) and you want to republish with **the same version number**
+after fixing things. Fine for pre-releases / alphas; for a version that
+users may already have installed, prefer bumping to the next patch/alpha
+instead — re-using a version silently overwrites their update metadata.
+
+```sh
+# 1. Delete the local tag
+git tag -d v2.0.0-alpha.1
+
+# 2. Delete the remote tag
+git push origin --delete v2.0.0-alpha.1
+
+# 3. Delete the GitHub Release
+#    github.com/lauriejim/fino-front/releases → "…" → Delete
+
+# 4. Re-tag from the current commit (after you've pushed your fix)
+git tag v2.0.0-alpha.1
+git push origin v2.0.0-alpha.1
+```
+
+The workflow picks the new tag up and publishes a fresh Release with
+the same name. electron-updater on installed apps won't re-download
+(same version string) — that's why this flow is safer for alphas than
+for stable releases.
+
 ### Checklist before tagging
 
 - [ ] Dependencies stable (no half-baked branch work)
@@ -113,16 +141,8 @@ Check **GitHub → Actions** for the failed run. Common causes:
 - **`concurrently` not found or peer-dep errors** → `.npmrc` with
   `legacy-peer-deps=true` must be committed (it is — don't delete it).
 
-If you need to re-run a release for the same version (e.g. to fix a
-build hiccup), delete the tag locally and on GitHub, delete the draft
-Release, and re-tag:
-
-```sh
-git tag -d v2.0.1
-git push origin --delete v2.0.1
-# Delete the Release on github.com/lauriejim/fino-front/releases
-# Then redo: yarn version --new-version 2.0.1 && git push --follow-tags
-```
+To re-run a release under the same version after a failure, see the
+"Redo a release under the same version" section above.
 
 ## Architecture notes
 
