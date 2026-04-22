@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { PersonIcon, SignOutIcon } from "@primer/octicons-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sidebar } from "./Sidebar";
+import { UpdateBanner } from "./UpdateBanner";
 
 const SIDEBAR_WIDTH = 260;
 const HEADER_HEIGHT = 48;
@@ -54,6 +55,10 @@ export function AppShell() {
           </ActionMenu>
         )}
       </Box>
+
+      {/* Update notification — appears when electron-updater detects a
+          new version. Silent at idle / checking / up-to-date. */}
+      <UpdateBanner />
 
       {/* Body: sidebar + main */}
       <Box sx={{ flex: 1, display: "flex", minHeight: 0 }}>

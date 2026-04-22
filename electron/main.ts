@@ -172,7 +172,7 @@ ipcMain.handle("updater:openManualDownload", async () => {
     return true;
   }
 
-  await shell.openExternal("https://github.com/lauriejim/MIR/releases/latest");
+  await shell.openExternal("https://github.com/lauriejim/fino-front/releases/latest");
   return true;
 });
 
