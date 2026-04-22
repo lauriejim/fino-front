@@ -1,7 +1,7 @@
 {
   "name": "fino",
   "description": "Fino — v2 of Make It Rain (React + Primer + Electron)",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alpha.1",
   "private": true,
   "main": "dist-electron/main.js",
   "license": "MIT",
@@ -61,12 +61,19 @@
       }
     ],
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.finance",
       "icon": "build/icon.png"
     },
     "win": {
-      "target": ["nsis", "portable", "zip"],
+      "target": [
+        "nsis",
+        "portable",
+        "zip"
+      ],
       "icon": "build/icon.ico"
     }
   }
