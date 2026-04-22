@@ -41,6 +41,89 @@ npm run package:mac     # -> release/*.dmg  (requires GH_TOKEN to publish)
 npm run package:win
 ```
 
+## Release process
+
+Releases are cut from your laptop by pushing a version tag. CI takes over
+from there — `.github/workflows/release.yml` builds the Electron app for
+macOS + Windows in parallel and publishes the artefacts (DMG, zips,
+NSIS installer) to a GitHub Release on this repo. `electron-updater` in
+the installed app polls that Release on startup and prompts the user to
+install when a newer version shows up.
+
+### Standard flow
+
+```sh
+# Bump version in package.json — yarn version does commit + tag locally
+yarn version --new-version 2.0.1
+
+# Push branch + the freshly-created tag to GitHub
+git push origin main --follow-tags
+```
+
+That's it. The tag (`v2.0.1`) triggers the Release workflow.
+
+### Pre-release / alpha
+
+Use a semver pre-release suffix to test the pipeline or ship to beta
+users without promoting to "latest":
+
+```sh
+yarn version --new-version 2.0.0-alpha.1
+git push origin main --follow-tags
+```
+
+### Manual tagging (if you want to keep the commit separate from the tag)
+
+```sh
+yarn version --new-version 2.0.1 --no-git-tag-version
+git commit -am "Release v2.0.1"
+git tag v2.0.1
+git push origin main --tags
+```
+
+### Checklist before tagging
+
+- [ ] Dependencies stable (no half-baked branch work)
+- [ ] `.env.production` points to the right Strapi URL (this is the file
+      Vite reads at build time; `.env` only affects `yarn dev`)
+- [ ] Build works locally (`yarn package:mac` on Mac / `yarn package:win` on Windows)
+- [ ] Changelog / release notes drafted somewhere (optional but nice)
+
+### Env file strategy
+
+Vite loads env files by mode:
+
+| File              | Mode         | Git-tracked? | Purpose                                           |
+|-------------------|--------------|--------------|---------------------------------------------------|
+| `.env.production` | `build`      | yes          | API URL used in the packaged app — edit to change prod backend |
+| `.env`            | `dev`        | **no**       | Your personal dev settings (localhost / staging) |
+| `.env.local`      | dev + build  | **no**       | One-off overrides; rarely needed                  |
+
+More specific wins — so in a `build`, `.env.production` wins over `.env`.
+
+### If the workflow fails
+
+Check **GitHub → Actions** for the failed run. Common causes:
+
+- **"Resource not accessible by integration"** → go to *Settings → Actions
+  → General → Workflow permissions* and enable "Read and write permissions".
+- **Icon not found (`build/icon.png` / `build/icon.ico`)** → place the
+  icons at those paths, or remove the `build.mac.icon` / `build.win.icon`
+  fields from `package.json`.
+- **`concurrently` not found or peer-dep errors** → `.npmrc` with
+  `legacy-peer-deps=true` must be committed (it is — don't delete it).
+
+If you need to re-run a release for the same version (e.g. to fix a
+build hiccup), delete the tag locally and on GitHub, delete the draft
+Release, and re-tag:
+
+```sh
+git tag -d v2.0.1
+git push origin --delete v2.0.1
+# Delete the Release on github.com/lauriejim/fino-front/releases
+# Then redo: yarn version --new-version 2.0.1 && git push --follow-tags
+```
+
 ## Architecture notes
 
 ```
